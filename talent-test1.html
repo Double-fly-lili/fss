@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>多维天赋潜能测试</title>
+    <!-- 先加载Chart.js和插件 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #7c3aed;
+            --accent: #db2777;
+            --dark: #334155;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --success: #059669;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-light: #ffffff;
+            --bg-medium: #f1f5f9;
+            --border: #e2e8f0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background: var(--bg-medium);
+            min-height: 100vh;
+            color: var(--dark);
+            padding: 0;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            background: var(--bg-light);
+            min-height: 100vh;
+            width: 100%;
+            max-width: 100%;
+            padding-bottom: 50px;
+            box-shadow: none;
+            border: none;
+            border-radius: 0;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            padding: 20px 15px;
+            text-align: center;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: clamp(1.5rem, 5vw, 1.8rem);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+        }
+        
+        .content {
+            padding: 20px 15px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .intro-screen, .question-screen, .result-screen {
+            display: none;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        .intro-screen {
+            text-align: center;
+        }
+        
+        .intro-screen h2 {
+            font-size: clamp(1.3rem, 4vw, 1.6rem);
+            margin-bottom: 20px;
+        }
+        
+        .intro-screen p {
+            margin: 15px 0 20px;
+            line-height: 1.6;
+            color: var(--gray);
+            font-size: clamp(0.9rem, 3vw, 1rem);
+        }
+        
+        .test-info {
+            background: var(--bg-medium);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .test-info h3 {
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            margin-bottom: 10px;
+        }
+        
+        .test-info ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .test-info li {
+            margin-bottom: 8px;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+        }
+        
+        .question-number {
+            font-size: clamp(0.9rem, 3vw, 1rem);
+            color: var(--gray);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-medium);
+            border-radius: 4px;
+            width: 100%;
+            max-width: 70%;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .question-text {
+            font-size: clamp(1rem, 3.5vw, 1.3rem);
+            margin-bottom: 20px;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .option {
+            background: var(--bg-medium);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+            text-align: left;
+        }
+        
+        .option:hover {
+            background: #e6efff;
+            transform: translateY(-2px);
+        }
+        
+        .option.selected {
+            border-color: var(--primary);
+            background: rgba(79, 70, 229, 0.05);
+        }
+        
+        .btn {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: clamp(1rem, 3vw, 1.1rem);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result-screen h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: clamp(1.3rem, 4vw, 1.6rem);
+        }
+        
+        /* 文字总结样式 */
+        .result-summary {
+            background: var(--bg-medium);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+        
+        .result-summary h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: clamp(1.1rem, 3.5vw, 1.4rem);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+        
+        .main-talent {
+            margin-bottom: 15px;
+        }
+        
+        .strengths, .weaknesses {
+            margin-bottom: 15px;
+        }
+        
+        .strengths h4, .weaknesses h4 {
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            margin-bottom: 8px;
+        }
+        
+        .strengths h4 {
+            color: var(--success);
+        }
+        
+        .weaknesses h4 {
+            color: var(--warning);
+        }
+        
+        .talent-item, .weak-item {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+        }
+        
+        .talent-item {
+            background: rgba(85, 239, 196, 0.2);
+            color: var(--success);
+        }
+        
+        .weak-item {
+            background: rgba(253, 203, 110, 0.2);
+            color: var(--warning);
+        }
+        
+        .analysis-text {
+            color: var(--gray);
+            font-size: clamp(0.9rem, 3vw, 1rem);
+            margin-top: 15px;
+            font-style: italic;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: clamp(300px, 60vw, 500px);
+            margin-bottom: 30px;
+            background: var(--bg-medium);
+            border-radius: 15px;
+            padding: 15px;
+            width: 100%;
+        }
+        
+        .restart-btn {
+            display: block;
+            margin: 30px auto 0;
+        }
+        
+        /* 针对大屏幕的优化 */
+        @media (min-width: 768px) {
+            .container {
+                margin: 0 auto;
+                max-width: 900px;
+                min-height: calc(100vh - 40px);
+                margin-top: 20px;
+                margin-bottom: 20px;
+                border-radius: 20px;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+                border: 1px solid var(--border);
+            }
+            
+            .content {
+                padding: 30px;
+            }
+            
+            .header {
+                border-radius: 20px 20px 0 0;
+            }
+            
+            .progress-bar {
+                max-width: 70%;
+            }
+            
+            .btn {
+                width: auto;
+            }
+        }
+        
+        /* 针对小屏幕手机的优化 */
+        @media (max-width: 480px) {
+            .question-number {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .progress-bar {
+                max-width: 100%;
+            }
+            
+            .chart-container {
+                height: 300px;
+                padding: 10px;
+            }
+            
+            .result-summary {
+                padding: 15px;
+            }
+            
+            .talent-item, .weak-item {
+                display: inline-block;
+                margin-right: 5px;
+                padding: 4px 10px;
+            }
+        }
+        
+        /* 横向模式优化 */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .chart-container {
+                height: 250px;
+            }
+            
+            .header {
+                padding: 10px 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.3rem;
+                margin-bottom: 5px;
+            }
+            
+            .header p {
+                font-size: 0.85rem;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>多维天赋潜能测试</h1>
+            <p>探索你的内在潜能，发现你的天赋优势</p>
+        </div>
+        
+        <div class="content">
+            <!-- 介绍页面 -->
+            <div class="intro-screen active">
+                <h2>欢迎参加天赋潜能测试</h2>
+                <p>本测试包含30个问题，从逻辑思维、创造力、社交能力等多个维度全面评估你的天赋潜能。请根据你的真实情况选择最符合的选项，答案没有对错之分。</p>
+                
+                <div class="test-info">
+                    <h3>测试信息</h3>
+                    <ul>
+                        <li>共30道题目，涵盖10个天赋维度</li>
+                        <li>预计完成时间：5-8分钟</li>
+                        <li>根据真实情况作答，结果更准确</li>
+                        <li>测试结果将以条形图形式直观展示</li>
+                    </ul>
+                </div>
+                
+                <button class="btn start-btn" id="startButton">开始测试</button>
+            </div>
+            
+            <!-- 问题页面 -->
+            <div class="question-screen">
+                <div class="question-number">
+                    <span>问题 <span id="current-question">1</span>/30</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+                
+                <div class="question-text" id="question-text">问题文本</div>
+                
+                <div class="options" id="options-container">
+                    <!-- 选项将通过JS动态生成 -->
+                </div>
+                
+                <button class="btn next-btn" id="nextButton" disabled>下一题</button>
+            </div>
+            
+            <!-- 结果页面 -->
+            <div class="result-screen">
+                <h2>你的天赋潜能分析报告</h2>
+                
+                <!-- 文字总结区域 -->
+                <div class="result-summary" id="result-summary">
+                    <!-- 内容将通过JS动态生成 -->
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="bar-chart"></canvas>
+                </div>
+                
+                <button class="btn restart-btn" id="restartButton">重新测试</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 定义测试题目
+        const questions = [
+            {
+                text: "当遇到复杂问题时，你更倾向于：",
+                options: [
+                    { text: "分解问题，逐步分析", score: { logical: 15, leadership: 2 } },
+                    { text: "凭直觉寻找解决方案", score: { creative: 15, logical: 1 } },
+                    { text: "寻求他人的建议", score: { social: 15, leadership: 1 } },
+                    { text: "先放一放，稍后再想", score: { emotional: 15, logical: 1 } }
+                ]
+            },
+            {
+                text: "你更喜欢哪种休闲活动？",
+                options: [
+                    { text: "阅读或解谜游戏", score: { logical: 15, language: 2 } },
+                    { text: "绘画或手工创作", score: { artistic: 15, creative: 3 } },
+                    { text: "参加社交聚会", score: { social: 15, leadership: 2 } },
+                    { text: "听音乐或演奏乐器", score: { musical: 15, artistic: 2 } }
+                ]
+            },
+            {
+                text: "在团队合作中，你通常：",
+                options: [
+                    { text: "制定计划并分配任务", score: { leadership: 15, logical: 3 } },
+                    { text: "提出创新的想法", score: { creative: 15, social: 2 } },
+                    { text: "协调人际关系", score: { social: 15, emotional: 3 } },
+                    { text: "负责具体执行", score: { motor: 15, leadership: 1 } }
+                ]
+            },
+            {
+                text: "你对新事物的学习方式更接近：",
+                options: [
+                    { text: "通过逻辑分析理解原理", score: { logical: 15, spatial: 2 } },
+                    { text: "通过实践操作掌握", score: { motor: 15, creative: 2 } },
+                    { text: "通过观察模仿学习", score: { artistic: 15, spatial: 2 } },
+                    { text: "通过语言描述理解", score: { language: 15, logical: 2 } }
+                ]
+            },
+            {
+                text: "当需要表达观点时，你会：",
+                options: [
+                    { text: "清晰有条理地阐述", score: { language: 15, logical: 3 } },
+                    { text: "用生动形象的比喻", score: { creative: 15, language: 3 } },
+                    { text: "关注听众的反应", score: { social: 15, emotional: 3 } },
+                    { text: "用简洁的方式表达", score: { logical: 15, language: 2 } }
+                ]
+            },
+            {
+                text: "你对空间布局的敏感度如何？",
+                options: [
+                    { text: "非常敏感，善于规划空间", score: { spatial: 20, artistic: 5 } },
+                    { text: "一般，能理解基本布局", score: { spatial: 8, logical: 2 } },
+                    { text: "不太敏感，需要具体指引", score: { spatial: 3, motor: 2 } },
+                    { text: "完全没概念，依赖他人", score: { spatial: 1, social: 2 } }
+                ]
+            },
+            {
+                text: "你对音乐的感受力如何？",
+                options: [
+                    { text: "能分辨细微的旋律变化", score: { musical: 20, artistic: 5 } },
+                    { text: "能感受到音乐的情绪", score: { musical: 12, emotional: 3 } },
+                    { text: "只能区分喜欢或不喜欢", score: { musical: 4, artistic: 1 } },
+                    { text: "对音乐不太敏感", score: { musical: 1, logical: 2 } }
+                ]
+            },
+            {
+                text: "你的身体协调性如何？",
+                options: [
+                    { text: "非常协调，擅长运动", score: { motor: 20, spatial: 5 } },
+                    { text: "一般，但能完成基本动作", score: { motor: 8, spatial: 2 } },
+                    { text: "不太协调，避免复杂动作", score: { motor: 3, logical: 2 } },
+                    { text: "协调性较差", score: { motor: 1, spatial: 1 } }
+                ]
+            },
+            {
+                text: "面对突发情绪时，你通常：",
+                options: [
+                    { text: "冷静分析原因", score: { emotional: 20, logical: 5 } },
+                    { text: "表达出来释放情绪", score: { emotional: 12, social: 3 } },
+                    { text: "转移注意力", score: { emotional: 5, creative: 2 } },
+                    { text: "难以控制情绪", score: { emotional: 1, social: 2 } }
+                ]
+            },
+            {
+                text: "你解决问题的思路更接近：",
+                options: [
+                    { text: "按部就班，遵循规则", score: { logical: 20, leadership: 2 } },
+                    { text: "打破常规，尝试新方法", score: { creative: 20, logical: 2 } },
+                    { text: "参考他人经验", score: { social: 20, leadership: 2 } },
+                    { text: "结合直觉与分析", score: { emotional: 10, logical: 10 } }
+                ]
+            },
+            {
+                text: "你在艺术欣赏方面：",
+                options: [
+                    { text: "能深入理解作品内涵", score: { artistic: 20, emotional: 5 } },
+                    { text: "注重形式美感", score: { artistic: 12, spatial: 3 } },
+                    { text: "只喜欢流行作品", score: { artistic: 4, social: 2 } },
+                    { text: "不太感兴趣", score: { artistic: 1, logical: 2 } }
+                ]
+            },
+            {
+                text: "你的语言表达能力：",
+                options: [
+                    { text: "非常流畅，善于表达", score: { language: 20, social: 5 } },
+                    { text: "清晰准确，但不够生动", score: { language: 12, logical: 3 } },
+                    { text: "一般，有时词不达意", score: { language: 4, emotional: 2 } },
+                    { text: "不善言辞，喜欢倾听", score: { language: 1, social: 3 } }
+                ]
+            },
+            {
+                text: "你在团队中的角色更接近：",
+                options: [
+                    { text: "决策者和组织者", score: { leadership: 20, social: 5 } },
+                    { text: "创意提供者", score: { creative: 20, artistic: 5 } },
+                    { text: "协调者和沟通者", score: { social: 20, emotional: 5 } },
+                    { text: "执行者和完成者", score: { motor: 20, logical: 5 } }
+                ]
+            },
+            {
+                text: "你对数字和逻辑的敏感度：",
+                options: [
+                    { text: "非常敏感，善于计算推理", score: { logical: 20, spatial: 2 } },
+                    { text: "较好，能处理日常计算", score: { logical: 12, language: 2 } },
+                    { text: "一般，需要借助工具", score: { logical: 4, motor: 2 } },
+                    { text: "不太敏感，避免数字工作", score: { logical: 1, creative: 2 } }
+                ]
+            },
+            {
+                text: "你的想象力如何？",
+                options: [
+                    { text: "非常丰富，善于联想", score: { creative: 20, artistic: 5 } },
+                    { text: "较好，能想象新事物", score: { creative: 12, spatial: 3 } },
+                    { text: "一般，基于现实思考", score: { creative: 4, logical: 3 } },
+                    { text: "比较实际，缺乏想象", score: { creative: 1, motor: 3 } }
+                ]
+            },
+            {
+                text: "你在社交场合中：",
+                options: [
+                    { text: "活跃主动，善于交际", score: { social: 20, leadership: 5 } },
+                    { text: "选择性社交，结交知己", score: { social: 12, emotional: 3 } },
+                    { text: "被动参与，需要熟悉环境", score: { social: 4, language: 2 } },
+                    { text: "尽量避免，喜欢独处", score: { social: 1, creative: 3 } }
+                ]
+            },
+            {
+                text: "你对色彩和美感的敏感度：",
+                options: [
+                    { text: "非常敏感，有很好的审美", score: { artistic: 20, spatial: 5 } },
+                    { text: "较好，能区分美丑", score: { artistic: 12, creative: 2 } },
+                    { text: "一般，随大众审美", score: { artistic: 4, social: 2 } },
+                    { text: "不太敏感，不太在意", score: { artistic: 1, logical: 2 } }
+                ]
+            },
+            {
+                text: "你学习新语言的能力：",
+                options: [
+                    { text: "很快，善于掌握规律", score: { language: 20, logical: 5 } },
+                    { text: "较好，需要一定练习", score: { language: 12, social: 2 } },
+                    { text: "一般，进步缓慢", score: { language: 4, spatial: 2 } },
+                    { text: "困难，不擅长语言学习", score: { language: 1, musical: 2 } }
+                ]
+            },
+            {
+                text: "你对立体空间的感知能力：",
+                options: [
+                    { text: "很强，能想象三维结构", score: { spatial: 20, logical: 5 } },
+                    { text: "较好，能理解空间关系", score: { spatial: 12, motor: 3 } },
+                    { text: "一般，需要实物参考", score: { spatial: 4, artistic: 2 } },
+                    { text: "较弱，缺乏空间概念", score: { spatial: 1, language: 2 } }
+                ]
+            },
+            {
+                text: "你对节奏和韵律的敏感度：",
+                options: [
+                    { text: "非常敏感，能跟上复杂节奏", score: { musical: 20, motor: 5 } },
+                    { text: "较好，能把握基本节奏", score: { musical: 12, artistic: 2 } },
+                    { text: "一般，只能跟随简单节奏", score: { musical: 4, spatial: 2 } },
+                    { text: "不太敏感，跟不上节奏", score: { musical: 1, logical: 2 } }
+                ]
+            },
+            {
+                text: "你的动手能力如何？",
+                options: [
+                    { text: "很强，善于手工制作", score: { motor: 20, spatial: 5 } },
+                    { text: "较好，能完成精细操作", score: { motor: 12, artistic: 2 } },
+                    { text: "一般，能做简单手工", score: { motor: 4, logical: 2 } },
+                    { text: "较差，避免精细操作", score: { motor: 1, creative: 2 } }
+                ]
+            },
+            {
+                text: "你在管理方面的能力：",
+                options: [
+                    { text: "很强，善于组织协调", score: { leadership: 20, logical: 5 } },
+                    { text: "较好，能管理小团队", score: { leadership: 12, social: 3 } },
+                    { text: "一般，适合被管理", score: { leadership: 4, motor: 3 } },
+                    { text: "较差，不喜欢管理", score: { leadership: 1, creative: 3 } }
+                ]
+            },
+            {
+                text: "你处理压力的方式：",
+                options: [
+                    { text: "冷静分析解决方案", score: { emotional: 20, logical: 5 } },
+                    { text: "寻求支持，与人交流", score: { emotional: 12, social: 3 } },
+                    { text: "转移注意，放松自己", score: { emotional: 8, musical: 2 } },
+                    { text: "容易焦虑，需要时间恢复", score: { emotional: 2, artistic: 2 } }
+                ]
+            },
+            {
+                text: "你解决数学问题的能力：",
+                options: [
+                    { text: "很强，喜欢挑战难题", score: { logical: 20, spatial: 5 } },
+                    { text: "较好，能解决应用问题", score: { logical: 12, language: 2 } },
+                    { text: "一般，能做基础运算", score: { logical: 4, motor: 2 } },
+                    { text: "较差，需要计算器", score: { logical: 1, creative: 2 } }
+                ]
+            },
+            {
+                text: "你的创新思维能力：",
+                options: [
+                    { text: "很强，常有新奇想法", score: { creative: 20, artistic: 5 } },
+                    { text: "较好，能改进现有方法", score: { creative: 12, logical: 3 } },
+                    { text: "一般，按部就班思考", score: { creative: 4, social: 2 } },
+                    { text: "较差，习惯传统方法", score: { creative: 1, leadership: 2 } }
+                ]
+            },
+            {
+                text: "你在人际交往中的优势：",
+                options: [
+                    { text: "善于沟通，表达清晰", score: { social: 20, language: 5 } },
+                    { text: "善于倾听，理解他人", score: { social: 15, emotional: 5 } },
+                    { text: "善于协调，化解矛盾", score: { social: 18, leadership: 5 } },
+                    { text: "真诚可靠，值得信任", score: { social: 10, motor: 5 } }
+                ]
+            },
+            {
+                text: "你对艺术创作的兴趣：",
+                options: [
+                    { text: "非常浓厚，喜欢创作", score: { artistic: 20, creative: 5 } },
+                    { text: "有兴趣，喜欢欣赏", score: { artistic: 12, musical: 2 } },
+                    { text: "一般，偶尔关注", score: { artistic: 4, social: 2 } },
+                    { text: "不太感兴趣", score: { artistic: 1, logical: 2 } }
+                ]
+            },
+            {
+                text: "你的表达能力特点：",
+                options: [
+                    { text: "生动形象，富有感染力", score: { language: 20, social: 5 } },
+                    { text: "准确严谨，逻辑性强", score: { language: 18, logical: 5 } },
+                    { text: "简洁明了，直达要点", score: { language: 15, leadership: 2 } },
+                    { text: "含蓄委婉，留有余地", score: { language: 8, emotional: 5 } }
+                ]
+            },
+            {
+                text: "你对方向和位置的记忆：",
+                options: [
+                    { text: "很强，过目不忘", score: { spatial: 20, logical: 2 } },
+                    { text: "较好，基本不会迷路", score: { spatial: 12, motor: 2 } },
+                    { text: "一般，需要导航帮助", score: { spatial: 4, social: 2 } },
+                    { text: "较差，经常迷路", score: { spatial: 1, language: 2 } }
+                ]
+            },
+            {
+                text: "总结一下，你认为自己最突出的能力是：",
+                options: [
+                    { text: "分析思考能力", score: { logical: 30, creative: 2 } },
+                    { text: "创造想象能力", score: { creative: 30, artistic: 5 } },
+                    { text: "人际交往能力", score: { social: 30, leadership: 5 } },
+                    { text: "实践操作能力", score: { motor: 30, spatial: 5 } }
+                ]
+            }
+        ];
+
+        // 维度定义
+        const dimensions = {
+            logical: { 
+                name: "逻辑思维", 
+                color: "#4f46e5", 
+                description: "善于分析、推理和解决问题",
+                strengthDesc: "你拥有出色的逻辑思维能力，善于分析问题、推理判断和解决复杂难题，是天生的问题解决者。",
+                weaknessDesc: "你的逻辑思维能力有待提升，可以通过逻辑推理游戏、数学问题等方式来锻炼这方面的能力。"
+            },
+            creative: { 
+                name: "创造力", 
+                color: "#7c3aed", 
+                description: "富有想象力和创新思维",
+                strengthDesc: "你拥有丰富的创造力和想象力，善于跳出常规思考，总能产生新颖独特的想法和解决方案。",
+                weaknessDesc: "你的创造力需要更多的激发，可以尝试艺术创作、头脑风暴等活动来培养创新思维。"
+            },
+            social: { 
+                name: "社交能力", 
+                color: "#db2777", 
+                description: "善于沟通和人际交往",
+                strengthDesc: "你具备出色的社交能力，善于与人沟通交流，建立和维护人际关系，是天生的社交达人。",
+                weaknessDesc: "你的社交能力需要进一步发展，可以多参与社交活动，学习沟通技巧来提升这方面的能力。"
+            },
+            artistic: { 
+                name: "艺术感", 
+                color: "#f97316", 
+                description: "具有审美能力和艺术感知",
+                strengthDesc: "你拥有敏锐的艺术感知力和审美能力，对美有独特的理解和鉴赏力，艺术天赋突出。",
+                weaknessDesc: "你的艺术感知能力可以进一步培养，多接触艺术作品、音乐和文学有助于提升审美水平。"
+            },
+            language: { 
+                name: "语言表达", 
+                color: "#059669", 
+                description: "善于语言组织和表达",
+                strengthDesc: "你具备优秀的语言表达能力，善于组织语言、清晰表达观点，沟通表达能力出众。",
+                weaknessDesc: "你的语言表达能力需要加强，可以通过写作、演讲等方式来提升语言组织和表达技巧。"
+            },
+            spatial: { 
+                name: "空间想象", 
+                color: "#3b82f6", 
+                description: "具有空间感知和想象能力",
+                strengthDesc: "你拥有出色的空间想象力和感知能力，善于理解和处理空间关系，在设计和规划方面有天赋。",
+                weaknessDesc: "你的空间想象能力需要锻炼，可以通过拼图、模型制作等活动来提升空间思维能力。"
+            },
+            musical: { 
+                name: "音乐感知", 
+                color: "#ef4444", 
+                description: "对音乐有敏锐的感知能力",
+                strengthDesc: "你具备敏锐的音乐感知能力，对旋律、节奏和音调有很好的把握，音乐天赋明显。",
+                weaknessDesc: "你的音乐感知能力可以培养，多听音乐、学习乐器有助于提升音乐素养和感知能力。"
+            },
+            motor: { 
+                name: "运动协调", 
+                color: "#14b8a6", 
+                description: "身体协调和动手能力强",
+                strengthDesc: "你拥有出色的运动协调能力和动手能力，身体控制精准，在手工制作和体育运动方面有优势。",
+                weaknessDesc: "你的运动协调能力需要提升，可以通过手工制作、体育运动等方式来锻炼手眼协调能力。"
+            },
+            leadership: { 
+                name: "领导能力", 
+                color: "#f59e0b", 
+                description: "具有组织和决策能力",
+                strengthDesc: "你具备优秀的领导才能，善于组织协调、做出决策，在团队中能够发挥引领和带动作用。",
+                weaknessDesc: "你的领导能力可以进一步发展，多参与团队管理、承担责任有助于培养领导素质。"
+            },
+            emotional: { 
+                name: "情绪管理", 
+                color: "#8b5cf6", 
+                description: "善于调节和管理情绪",
+                strengthDesc: "你拥有出色的情绪管理能力，善于理解和调节自己的情绪，情商较高，心态平和稳定。",
+                weaknessDesc: "你的情绪管理能力需要加强，可以通过冥想、情绪日记等方式来提升情绪调节能力。"
+            }
+        };
+
+        // 全局变量
+        let currentQuestionIndex = 0;
+        let selectedOption = null;
+        let scores = {
+            logical: 0,
+            creative: 0,
+            social: 0,
+            artistic: 0,
+            language: 0,
+            spatial: 0,
+            musical: 0,
+            motor: 0,
+            leadership: 0,
+            emotional: 0
+        };
+
+        // 页面加载完成后初始化
+        window.onload = function() {
+            // 获取DOM元素
+            const startButton = document.getElementById('startButton');
+            const nextButton = document.getElementById('nextButton');
+            const restartButton = document.getElementById('restartButton');
+            const introScreen = document.querySelector('.intro-screen');
+            const questionScreen = document.querySelector('.question-screen');
+            const resultScreen = document.querySelector('.result-screen');
+            
+            // 确保初始屏幕正确显示
+            introScreen.classList.add('active');
+            questionScreen.classList.remove('active');
+            resultScreen.classList.remove('active');
+            
+            // 绑定事件处理程序
+            startButton.addEventListener('click', startTest);
+            nextButton.addEventListener('click', goToNextQuestion);
+            restartButton.addEventListener('click', restartTest);
+            
+            // 处理窗口大小变化时重新绘制图表
+            window.addEventListener('resize', function() {
+                if (window.barChart) {
+                    window.barChart.resize();
+                }
+            });
+        };
+
+        // 开始测试
+        function startTest() {
+            const introScreen = document.querySelector('.intro-screen');
+            const questionScreen = document.querySelector('.question-screen');
+            
+            introScreen.classList.remove('active');
+            questionScreen.classList.add('active');
+            loadQuestion(currentQuestionIndex);
+        }
+
+        // 加载问题
+        function loadQuestion(index) {
+            const question = questions[index];
+            const questionText = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+            const currentQuestionSpan = document.getElementById('current-question');
+            const progressFill = document.getElementById('progress-fill');
+            const nextBtn = document.getElementById('nextButton');
+            
+            questionText.textContent = question.text;
+            currentQuestionSpan.textContent = index + 1;
+            
+            // 更新进度条
+            const progress = ((index + 1) / questions.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            
+            // 清空选项容器
+            optionsContainer.innerHTML = '';
+            
+            // 创建选项
+            question.options.forEach((option, optionIndex) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option.text;
+                optionElement.dataset.index = optionIndex;
+                
+                // 为触摸设备优化点击事件
+                optionElement.addEventListener('click', function() {
+                    selectOption(this, optionIndex);
+                });
+                optionElement.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    selectOption(this, optionIndex);
+                });
+                
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // 重置选择状态
+            selectedOption = null;
+            nextBtn.disabled = true;
+        }
+
+        // 选择选项
+        function selectOption(optionElement, optionIndex) {
+            // 移除之前的选择
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // 添加新选择
+            optionElement.classList.add('selected');
+            selectedOption = optionIndex;
+            
+            const nextBtn = document.getElementById('nextButton');
+            nextBtn.disabled = false;
+        }
+
+        // 前往下一题
+        function goToNextQuestion() {
+            if (selectedOption !== null) {
+                // 记录分数
+                const selectedScore = questions[currentQuestionIndex].options[selectedOption].score;
+                for (const dimension in selectedScore) {
+                    scores[dimension] += selectedScore[dimension];
+                }
+                
+                // 检查是否是最后一题
+                if (currentQuestionIndex < questions.length - 1) {
+                    currentQuestionIndex++;
+                    loadQuestion(currentQuestionIndex);
+                    
+                    // 在移动设备上自动滚动到顶部
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                } else {
+                    showResults();
+                }
+            }
+        }
+
+        // 显示结果
+        function showResults() {
+            const questionScreen = document.querySelector('.question-screen');
+            const resultScreen = document.querySelector('.result-screen');
+            
+            questionScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+            
+            // 计算百分比分数（大幅增强差异）
+            const percentageScores = {};
+            const maxPossibleScore = 300; // 调整后的最大可能分数
+            
+            // 计算原始分数
+            const rawScores = {...scores};
+            
+            // 应用非线性转换，增强差异
+            for (const dimension in scores) {
+                // 先标准化到0-100
+                let score = Math.min(Math.round((scores[dimension] / maxPossibleScore) * 100), 100);
+                
+                // 应用指数函数增强差异
+                score = Math.round(Math.pow(score / 10, 2) * 10);
+                
+                // 确保分数在5-100之间
+                score = Math.min(Math.max(score, 5), 100);
+                
+                percentageScores[dimension] = score;
+            }
+            
+            // 生成文字总结
+            generateResultSummary(percentageScores);
+            
+            // 创建横向条形图
+            createBarChart(percentageScores, rawScores);
+        }
+
+        // 生成文字总结
+        function generateResultSummary(scores) {
+            const summaryContainer = document.getElementById('result-summary');
+            
+            // 按分数排序
+            const sortedDimensions = Object.keys(dimensions).sort((a, b) => scores[b] - scores[a]);
+            
+            // 找出优势天赋（前3名）
+            const strengths = sortedDimensions.slice(0, 3);
+            // 找出需要提升的天赋（后3名）
+            const weaknesses = sortedDimensions.slice(-3);
+            
+            // 主天赋（第一名）
+            const mainTalent = sortedDimensions[0];
+            
+            // 构建HTML内容
+            let htmlContent = `
+                <h3>你的天赋分析总结</h3>
+                
+                <div class="main-talent">
+                    <p><strong>你的核心天赋：</strong> <span style="color: ${dimensions[mainTalent].color}">${dimensions[mainTalent].name}</span></p>
+                    <p>${dimensions[mainTalent].strengthDesc}</p>
+                </div>
+                
+                <div class="strengths">
+                    <h4>你的优势天赋：</h4>
+                    <div class="talent-list">
+            `;
+            
+            // 添加优势天赋标签
+            strengths.forEach(talent => {
+                htmlContent += `<span class="talent-item">${dimensions[talent].name}</span>`;
+            });
+            
+            htmlContent += `
+                    </div>
+                </div>
+                
+                <div class="weaknesses">
+                    <h4>可以提升的方面：</h4>
+                    <div class="weak-list">
+            `;
+            
+            // 添加需要提升的天赋标签
+            weaknesses.forEach(talent => {
+                htmlContent += `<span class="weak-item">${dimensions[talent].name}</span>`;
+            });
+            
+            htmlContent += `
+                    </div>
+                </div>
+                
+                <div class="analysis-text">
+                    <p>根据测试结果，你在${dimensions[mainTalent].name}方面表现突出，同时在${dimensions[weaknesses[0]].name}、${dimensions[weaknesses[1]].name}等方面有提升空间。</p>
+                    <p>建议：发挥你的${dimensions[mainTalent].name}优势，同时可以通过针对性训练来提升其他方面的能力。</p>
+                </div>
+            `;
+            
+            // 设置内容
+            summaryContainer.innerHTML = htmlContent;
+        }
+
+        // 创建横向条形图
+        function createBarChart(scores, rawScores) {
+            const ctx = document.getElementById('bar-chart').getContext('2d');
+            
+            // 准备数据（按分数排序）
+            const sortedDimensions = Object.keys(dimensions).sort((a, b) => scores[a] - scores[b]);
+            
+            const labels = sortedDimensions.map(key => dimensions[key].name);
+            const dataValues = sortedDimensions.map(key => scores[key]);
+            const backgroundColors = sortedDimensions.map(key => dimensions[key].color);
+            const rawScoreValues = sortedDimensions.map(key => rawScores[key]);
+            
+            // 销毁现有图表（如果有）
+            if (window.barChart) {
+                window.barChart.destroy();
+            }
+            
+            // 动态调整图表配置以适应不同设备
+            const isMobile = window.innerWidth < 768;
+            const barThickness = isMobile ? 20 : 25;
+            const fontSize = isMobile ? 10 : 12;
+            const labelFontSize = isMobile ? 12 : 14;
+            
+            // 创建新图表
+            window.barChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '天赋得分',
+                        data: dataValues,
+                        backgroundColor: backgroundColors,
+                        borderColor: backgroundColors.map(color => color.replace(')', ', 0.8)').replace('rgb', 'rgba')),
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                        barThickness: barThickness,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // 横向条形图
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: fontSize,
+                                    weight: 'bold'
+                                },
+                                color: '#334155',
+                                stepSize: 20,
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: labelFontSize,
+                                    weight: 'bold'
+                                },
+                                color: '#334155',
+                                padding: isMobile ? 5 : 10
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#334155',
+                            bodyColor: '#334155',
+                            borderColor: 'rgba(79, 70, 229, 0.3)',
+                            borderWidth: 1,
+                            padding: isMobile ? 10 : 12,
+                            displayColors: true,
+                            boxPadding: 5,
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label: function(context) {
+                                    const dimensionKey = Object.keys(dimensions).find(key => dimensions[key].name === context.label);
+                                    const dimension = dimensions[dimensionKey];
+                                    const score = context.raw;
+                                    let level = '';
+                                    if (score >= 80) level = '（卓越）';
+                                    else if (score >= 60) level = '（优秀）';
+                                    else if (score >= 40) level = '（中等）';
+                                    else level = '（待提升）';
+                                    return `${score}分${level} - ${dimension.description}`;
+                                },
+                                afterLabel: function(context) {
+                                    const dimensionKey = Object.keys(dimensions).find(key => dimensions[key].name === context.label);
+                                    return `原始得分：${rawScores[dimensionKey]}`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            color: '#334155',
+                            font: {
+                                weight: 'bold',
+                                size: isMobile ? 10 : 14
+                            },
+                            formatter: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    },
+                    layout: {
+                        padding: {
+                            top: 10,
+                            bottom: 10,
+                            left: isMobile ? 5 : 20,
+                            right: isMobile ? 20 : 40
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
+        }
+
+        // 重新测试
+        function restartTest() {
+            // 重置状态
+            currentQuestionIndex = 0;
+            scores = {
+                logical: 0,
+                creative: 0,
+                social: 0,
+                artistic: 0,
+                language: 0,
+                spatial: 0,
+                musical: 0,
+                motor: 0,
+                leadership: 0,
+                emotional: 0
+            };
+            
+            // 返回介绍页面
+            const resultScreen = document.querySelector('.result-screen');
+            const introScreen = document.querySelector('.intro-screen');
+            
+            resultScreen.classList.remove('active');
+            introScreen.classList.add('active');
+            
+            // 滚动到顶部
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+</body>
+</html>
